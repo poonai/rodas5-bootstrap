@@ -1086,11 +1086,11 @@ def step9():
     )
     # residue(parameters, 0)
     
-    solver = optx.LevenbergMarquardt(
-    rtol=1e-8, atol=1e-8, verbose=frozenset({"step", "accepted", "loss", "step_size"})
-    )
+    # solver = optx.LevenbergMarquardt(
+    # rtol=1e-8, atol=1e-8, verbose=frozenset({"step", "accepted", "loss", "step_size"})
+    # )
 
-    sol = optx.least_squares(residue, solver, parameters, args=None)
+    # sol = optx.least_squares(residue, solver, parameters, args=None)
     print(sol.value)
     print(alpha)
     print(beta)
