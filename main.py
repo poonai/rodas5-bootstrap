@@ -1133,4 +1133,4 @@ def main():
     # run the function locally
     tune.remote()
 
-tune()
+tune.local()
