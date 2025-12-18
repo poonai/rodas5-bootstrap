@@ -1113,7 +1113,7 @@ image = modal.Image.from_registry("nvidia/cuda:13.1.0-devel-ubuntu22.04", add_py
     "optimistix>=0.0.11",
     "sympy>=1.14.0",
     "sympy2jax>=0.0.7",)
-@app.function(gpu="A100", image=image, cpu=8.0,memory=32768, timeout = 60 * 20)
+@app.function(gpu="A100", image=image, cpu=8.0,memory=32768, timeout = 60 * 40)
 def tune():
     from scipy.special import jn
     from pickle import NONE
