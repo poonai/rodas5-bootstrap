@@ -1005,7 +1005,7 @@ def step9():
                                     n, prev_step = accum
                                     next_step = prev_step + (w[n][r] * jnp.power(alpha_row_sum[r], 2))
                                     return (n, next_step)
-                                _, r_accum, _ = jax.lax.fori_loop(0, 8, inner_r, (n, 0.0))
+                                _, r_accum= jax.lax.fori_loop(0, 8, inner_r, (n, 0.0))
                                 next_step = prev_step + (w[m][n] * r_accum)
                                 return (m, next_step)
 
@@ -1053,8 +1053,8 @@ def step9():
 
         # condition 45 (JAX version, remove sympy, use subs for constants/parameters)
         def cond45_body(i, cond45_acc):
-            accu, subs = cond45_acc
-            return accu + b[i] * (beta_row_sum_without_ii[i] - alpha_row_sum[i]), subs
+            accu = cond45_acc
+            return accu + b[i] * (beta_row_sum_without_ii[i] - alpha_row_sum[i])
 
         condition45= jax.lax.fori_loop(0, 8, cond45_body, 0.0)
         r45 = condition45 - jnp.float64(1 / 2)
@@ -1073,7 +1073,8 @@ def step9():
         ])
         
  
-
+      
+    
     parameters = (
         jnp.float64(0.6358126895828704),
         jnp.float64(0.4095798393397535),
