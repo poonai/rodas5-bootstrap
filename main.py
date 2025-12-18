@@ -1092,7 +1092,7 @@ def step9():
 
     # sol = optx.least_squares(residue, solver, parameters, args=None)
     sol = jax.scipy.optimize.minimize(residue, parameters, method='BFGS', tol = 1e-8)
-    print(sol.value)
+    print(sol)
     print(alpha)
     print(beta)
     print(b)
