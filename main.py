@@ -505,8 +505,6 @@ def step9():
         subs_dict["α61"] = jnp.float64(0) 
         for i in range(8):
             for j in range(8):
-                if (i, j) in [(1, 0), (4, 1), (5, 4)]:
-                    continue 
                 if (j+1) >= (i+1):
                     subs_dict[f"α{i + 1}{j + 1}"] = jnp.float64(0)
                     
