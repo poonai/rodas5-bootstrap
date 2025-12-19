@@ -777,7 +777,7 @@ def step9():
         alpha = alpha.at[5, 2].set(sol.value[7])
 
         alpha = alpha.at[5, 0].set(
-            alpha_row_sum[5] - alpha[5][1] - alpha[5][1] - alpha[5][2] - alpha[5][3]
+            alpha_row_sum[5] - alpha[5][1] - alpha[5][4] - alpha[5][2] - alpha[5][3]
         )
 
     def substitute_without_free_parameter():
