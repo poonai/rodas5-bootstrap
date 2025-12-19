@@ -135,7 +135,7 @@ def step9():
             ]
         )
 
-        sol = lx.linear_solve(A, b, solver=lx.AutoLinearSolver(well_posed=False))
+        sol = lx.linear_solve(A, b, solver=lx.AutoLinearSolver(well_posed=True))
 
         beta = beta.at[4, 1].set(jnp.float64(sol.value[0]))
         beta = beta.at[4, 2].set(jnp.float64(sol.value[1]))
