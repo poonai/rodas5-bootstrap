@@ -713,7 +713,7 @@ def step9():
         )
         equation7_constant_term = (-1 * equation7_constant_term) - jnp.float64(1 / 8)
 
-        # equation 8 condition 19
+        # equation 8 condition 19 tilt
         equation8 = 0
         for i in range(8):
             j_sym = 0
