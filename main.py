@@ -751,7 +751,7 @@ def step9():
             ]
         )
         print(lhs)
-        rank = jnp.linalg.matrix_rank(lhs)
+        rank = jnp.linalg.matrix_rank(lhs, tol=1e-10)
         assert rank == 8, f"Rank-deficient system: rank={rank}"
         A = lx.MatrixLinearOperator(lhs)
         b = jnp.asarray(
