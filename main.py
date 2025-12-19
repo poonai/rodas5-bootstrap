@@ -546,6 +546,7 @@ def step9():
             coefficients = []
             for var in variables:
                 coeff = equation.coeff(sympy.Symbol(var))
+                print(coeff)
                 mod = sympy2jax.SymbolicModule(coeff)
                 coefficients.append(mod(**subs))
             return jnp.array(coefficients)
