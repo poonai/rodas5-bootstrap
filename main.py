@@ -383,6 +383,7 @@ def step9():
             beta = beta.at[i, i].set(gamma)
 
         for i in range(1, 8):
+            print(f"i {i} {beta[i]}")
             first_column = beta_row_sum_without_ii[i] - jnp.sum(beta[i][1:i])
             beta = beta.at[i, 0].set(first_column)
 
