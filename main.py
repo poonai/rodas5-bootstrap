@@ -501,9 +501,7 @@ def step9():
         # substitute free parameters and remaining α_ij
         subs_dict["α21"] = alpha[1][0]
         subs_dict["α52"] = alpha[4][1]
-        subs_dict["α65"] = alpha[5][4]
-        subs_dict["α11"] = alpha_row_sum[0]
-        subs_dict["α22"] = alpha_row_sum[1] - alpha[1][0] 
+        subs_dict["α65"] = alpha[5][4] 
         for i in range(8):
             for j in range(8):
                 if (i, j) not in [(1, 0), (4, 1), (5, 4), (0, 0), (1,0)]:
