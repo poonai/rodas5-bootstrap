@@ -544,6 +544,7 @@ def step9():
         def expand_and_extract_coeff(equation):
             equation = sympy.expand(equation)
             coefficients = []
+            print("break")
             for var in variables:
                 coeff = equation.coeff(sympy.Symbol(var))
                 print(coeff)
