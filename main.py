@@ -1,3 +1,4 @@
+from sympy.parsing.maxima import sub_dict
 from scipy.special import jn
 from pickle import NONE
 import jax
@@ -9,9 +10,8 @@ import jax
 import sympy2jax
 import time
 import modal
+
 jax.config.update("jax_enable_x64", True)
-
-
 
 
 def step9():
@@ -24,13 +24,11 @@ def step9():
     b = jnp.zeros((8), dtype=jnp.float64)
     b_tilt = jnp.zeros((8), dtype=jnp.float64)
 
-
     # page number 9
     def step1(gamma):
         nonlocal beta, alpha
         beta = beta.at[1, 0].set(0)
         alpha = alpha.at[1, 0].set(3.0 * gamma)
-
 
     def step2(gamma, alpha3, alpha4, alpha5, alpha52, alpha65, beta_tilt_5):
         nonlocal alpha_row_sum, beta, beta_row_sum_without_ii, alpha
@@ -60,7 +58,6 @@ def step9():
         alpha_row_sum = alpha_row_sum.at[5].set(jnp.float64(1))
         alpha_row_sum = alpha_row_sum.at[6].set(jnp.float64(1))
         alpha_row_sum = alpha_row_sum.at[7].set(jnp.float64(1))
-
 
     def step3(gamma):
         nonlocal beta, beta_row_sum_without_ii
@@ -98,7 +95,6 @@ def step9():
         beta_row_sum_without_ii = beta_row_sum_without_ii.at[3].set(
             jnp.float64(sol.value[2])
         )
-
 
     def step4(gamma):
         nonlocal alpha_row_sum, beta, beta_row_sum_without_ii
@@ -144,7 +140,6 @@ def step9():
         beta = beta.at[4, 1].set(jnp.float64(sol.value[0]))
         beta = beta.at[4, 2].set(jnp.float64(sol.value[1]))
         beta = beta.at[4, 3].set(jnp.float64(sol.value[2]))
-
 
     def step5(gamma):
         nonlocal alpha, beta, beta_row_sum_without_ii
@@ -199,7 +194,6 @@ def step9():
         beta = beta.at[5, 3].set(jnp.float64(sol.value[2]))
         beta = beta.at[5, 4].set(jnp.float64(sol.value[3]))
 
-
     def step6(gamma):
         nonlocal beta, beta_row_sum_without_ii
 
@@ -227,7 +221,10 @@ def step9():
                         (beta[4][2] * beta_row_sum_without_ii[2])
                         + (beta[4][3] * beta_row_sum_without_ii[3]),
                         jnp.float64(0.5)
-                        - ((2 * gamma * beta_row_sum_without_ii[5]) - jnp.power(gamma, 2)),
+                        - (
+                            (2 * gamma * beta_row_sum_without_ii[5])
+                            - jnp.power(gamma, 2)
+                        ),
                     ],
                     [
                         0,
@@ -266,7 +263,6 @@ def step9():
         beta = beta.at[6, 3].set(jnp.float64(sol.value[2]))
         beta = beta.at[6, 4].set(jnp.float64(sol.value[3]))
         beta = beta.at[6, 5].set(jnp.float64(sol.value[4]))
-
 
     def step7(gamma):
         nonlocal beta, beta_row_sum_without_ii, alpha_row_sum, alpha
@@ -317,7 +313,10 @@ def step9():
                         0,
                         0,
                         0,
-                        beta[5][4] * beta[4][3] * beta[3][2] * beta_row_sum_without_ii[2],
+                        beta[5][4]
+                        * beta[4][3]
+                        * beta[3][2]
+                        * beta_row_sum_without_ii[2],
                         jnp.float64(1 / 24)
                         - (jnp.float64(2 / 3) * gamma)
                         + (3 * jnp.power(gamma, 2))
@@ -377,7 +376,6 @@ def step9():
         beta = beta.at[7, 5].set(jnp.float64(sol.value[4]))
         beta = beta.at[7, 6].set(jnp.float64(sol.value[5]))
 
-
     def organize_constant(gamma):
         nonlocal b, b_tilt, alpha, beta, beta_row_sum, w
 
@@ -412,7 +410,6 @@ def step9():
 
         w = jnp.linalg.inv(beta)
 
-
     def substitute_symbols(equation):
         """Apply all substitutions to an equation"""
         # substitute constraint relationships
@@ -420,12 +417,12 @@ def step9():
         equation = equation.subs(alpha32, alpha3 - alpha31)
         alpha4, alpha41, alpha42, alpha43 = sympy.symbols("α4 α41 α42 α43")
         equation = equation.subs(alpha43, alpha4 - alpha41 - alpha42)
-        alpha5, alpha51, alpha52, alpha53, alpha54 = sympy.symbols("α5 α51 α52 α53 α54")
-        equation = equation.subs(alpha54, alpha5 - alpha51 - alpha52 - alpha53)
+        # alpha5, alpha51, alpha52, alpha53, alpha54 = sympy.symbols("α5 α51 α52 α53 α54")
+        # equation = equation.subs(alpha54, alpha5 - alpha51 - alpha52 - alpha53)
         alpha6, alpha61, alpha62, alpha63, alpha64, alpha65 = sympy.symbols(
             "α6 α61 α62 α63 α64 α65"
         )
-        equation = equation.subs(alpha64, alpha6 - alpha61 - alpha62 - alpha63 - alpha65)
+        equation = equation.subs(alpha64, alpha6 - alpha62 - alpha63 - alpha65)
 
         # # substitute b values
         # for i in range(8):
@@ -505,9 +502,11 @@ def step9():
         subs_dict["α21"] = alpha[1][0]
         subs_dict["α52"] = alpha[4][1]
         subs_dict["α65"] = alpha[5][4]
+        subs_dict["α11"] = alpha_row_sum[0]
+        subs_dict["α22"] = alpha_row_sum[1] - alpha[1][0] 
         for i in range(8):
             for j in range(8):
-                if (i, j) not in [(1, 0), (4, 1), (5, 4)]:
+                if (i, j) not in [(1, 0), (4, 1), (5, 4), (0, 0)(1,0)]:
                     subs_dict[f"α{i + 1}{j + 1}"] = jnp.float64(0)
 
         for i in range(8):
@@ -515,8 +514,6 @@ def step9():
                 subs_dict[f"β{i + 1}{j + 1}"] = beta[i][j]
 
         return subs_dict
-    
-
 
     def extract_coefficients_and_constant(equation, variables):
         """Extract coefficients for given variables and constant term from equation"""
@@ -528,7 +525,6 @@ def step9():
         constant_term = -1 * (equation.as_independent(*equation.free_symbols)[0])
         return jnp.array(coefficients), float(constant_term)
 
-
     def step8():
         nonlocal b, b_tilt, beta, alpha_row_sum, alpha, beta_row_sum, w
 
@@ -538,12 +534,13 @@ def step9():
             "α42",
             "α51",
             "α53",
-            "α61",
+            "α54",
             "α62",
             "α63",
         ]
 
         subs = step8_sympy_substitution()
+
         def expand_and_extract_coeff(equation):
             equation = sympy.expand(equation)
             coefficients = []
@@ -574,7 +571,10 @@ def step9():
         equation1 = substitute_symbols(equation1)
         equation1 = sympy.simplify(equation1)
         equation1 = sympy.expand(equation1)
-        equation1_coefficients, equation1_constant_term = expand_and_extract_coeff(equation1), extract_constant_term(equation1)
+        equation1_coefficients, equation1_constant_term = (
+            expand_and_extract_coeff(equation1),
+            extract_constant_term(equation1),
+        )
         equation1_constant_term = (-1 * equation1_constant_term) - jnp.float64(1 / 8)
 
         # equation 2 condition 10
@@ -591,7 +591,10 @@ def step9():
         equation2 = sympy.simplify(equation2)
         equation2 = sympy.expand(equation2)
 
-        equation2_coefficients, equation2_constant_term = expand_and_extract_coeff(equation2), extract_constant_term(equation2)
+        equation2_coefficients, equation2_constant_term = (
+            expand_and_extract_coeff(equation2),
+            extract_constant_term(equation2),
+        )
         equation2_constant_term = (-1 * equation2_constant_term) - jnp.float64(1 / 10)
 
         # equation 3 condition 12
@@ -608,7 +611,10 @@ def step9():
         equation3 = sympy.simplify(equation3)
         equation3 = sympy.expand(equation3)
 
-        equation3_coefficients, equation3_constant_term = expand_and_extract_coeff(equation3), extract_constant_term(equation3)
+        equation3_coefficients, equation3_constant_term = (
+            expand_and_extract_coeff(equation3),
+            extract_constant_term(equation3),
+        )
         equation3_constant_term = (-1 * equation3_constant_term) - jnp.float64(1 / 15)
 
         # equation 4 condition 19
@@ -629,7 +635,10 @@ def step9():
         equation4 = substitute_symbols(equation4)
         equation4 = sympy.simplify(equation4)
         equation4 = sympy.expand(equation4)
-        equation4_coefficients, equation4_constant_term = expand_and_extract_coeff(equation4), extract_constant_term(equation4)
+        equation4_coefficients, equation4_constant_term = (
+            expand_and_extract_coeff(equation4),
+            extract_constant_term(equation4),
+        )
         equation4_constant_term = (-1 * equation4_constant_term) - jnp.float64(1 / 4)
 
         # equation 5 condition 23
@@ -650,7 +659,10 @@ def step9():
         equation5 = substitute_symbols(equation5)
         equation5 = sympy.simplify(equation5)
         equation5 = sympy.expand(equation5)
-        equation5_coefficients, equation5_constant_term = expand_and_extract_coeff(equation5), extract_constant_term(equation5)
+        equation5_coefficients, equation5_constant_term = (
+            expand_and_extract_coeff(equation5),
+            extract_constant_term(equation5),
+        )
         equation5_constant_term = (-1 * equation5_constant_term) - jnp.float64(1 / 5)
 
         # equation 6 condition 28
@@ -666,14 +678,19 @@ def step9():
                             sympy.Symbol(f"α{L + 1}") ** 2
                         )
                     k_sym += (
-                        sympy.Symbol(f"α{j + 1}") * sympy.Symbol(f"α{j + 1}{k + 1}") * l_sym
+                        sympy.Symbol(f"α{j + 1}")
+                        * sympy.Symbol(f"α{j + 1}{k + 1}")
+                        * l_sym
                     )
                 j_sym += sympy.Symbol(f"β{i + 1}{j + 1}") * k_sym
             equation6 += sympy.Symbol(f"b{i + 1}") * j_sym
         equation6 = substitute_symbols(equation6)
         equation6 = sympy.simplify(equation6)
         equation6 = sympy.expand(equation6)
-        equation6_coefficients, equation6_constant_term = expand_and_extract_coeff(equation6), extract_constant_term(equation6)
+        equation6_coefficients, equation6_constant_term = (
+            expand_and_extract_coeff(equation6),
+            extract_constant_term(equation6),
+        )
         equation6_constant_term = (-1 * equation6_constant_term) - jnp.float64(1 / 20)
 
         # equation 7 condition 6_tilt
@@ -690,7 +707,10 @@ def step9():
         equation7 = substitute_symbols(equation7)
         equation7 = sympy.simplify(equation7)
         equation7 = sympy.expand(equation7)
-        equation7_coefficients, equation7_constant_term = expand_and_extract_coeff(equation7), extract_constant_term(equation7)
+        equation7_coefficients, equation7_constant_term = (
+            expand_and_extract_coeff(equation7),
+            extract_constant_term(equation7),
+        )
         equation7_constant_term = (-1 * equation7_constant_term) - jnp.float64(1 / 8)
 
         # equation 8 condition 19
@@ -711,9 +731,11 @@ def step9():
         equation8 = substitute_symbols(equation8)
         equation8 = sympy.simplify(equation8)
         equation8 = sympy.expand(equation8)
-        equation8_coefficients, equation8_constant_term = expand_and_extract_coeff(equation8), extract_constant_term(equation8)
+        equation8_coefficients, equation8_constant_term = (
+            expand_and_extract_coeff(equation8),
+            extract_constant_term(equation8),
+        )
         equation8_constant_term = (-1 * equation8_constant_term) - jnp.float64(1 / 4)
-
 
         lhs = jnp.array(
             [
@@ -727,6 +749,9 @@ def step9():
                 equation8_coefficients,
             ]
         )
+        print(lhs)
+        rank = jnp.linalg.matrix_rank(lhs)
+        assert rank == 8, f"Rank-deficient system: rank={rank}"
         A = lx.MatrixLinearOperator(lhs)
         b = jnp.asarray(
             [
@@ -747,13 +772,16 @@ def step9():
         alpha = alpha.at[3, 1].set(sol.value[2])
         alpha = alpha.at[4, 0].set(sol.value[3])
         alpha = alpha.at[4, 2].set(sol.value[4])
-        alpha = alpha.at[5, 0].set(sol.value[5])
+        alpha = alpha.at[5, 3].set(sol.value[5])
         alpha = alpha.at[5, 1].set(sol.value[6])
         alpha = alpha.at[5, 2].set(sol.value[7])
 
+        alpha = alpha.at[5, 0].set(
+            alpha_row_sum[5] - alpha[5][1] - alpha[5][1] - alpha[5][2] - alpha[5][4]
+        )
 
     def substitute_without_free_parameter():
-        nonlocal alpha_row_sum,beta_row_sum, alpha, beta_row_sum_without_ii,w
+        nonlocal alpha_row_sum, beta_row_sum, alpha, beta_row_sum_without_ii, w
         subs_dict = {}
         for i in range(8):
             subs_dict[f"b{i + 1}"] = b[i]
@@ -776,13 +804,12 @@ def step9():
 
         for i in range(8):
             for j in range(8):
-                subs_dict[f"β{i + 1}{j + 1}"] = beta[i][j]      
+                subs_dict[f"β{i + 1}{j + 1}"] = beta[i][j]
 
         for i in range(8):
             for j in range(8):
                 subs_dict[f"w{i + 1}{j + 1}"] = w[i][j]
         return subs_dict
-
 
     def residue(parameters, args):
         start_time = time.time()
@@ -805,7 +832,7 @@ def step9():
         print("organize_constant done", time.time() - start_time)
         step8()
         print("step8 done", time.time() - start_time)
-        nonlocal alpha_row_sum,beta_row_sum, alpha, beta_row_sum_without_ii,w
+        nonlocal alpha_row_sum, beta_row_sum, alpha, beta_row_sum_without_ii, w
         ## add parameters to subs
         alpha_row_sum = alpha_row_sum.at[2].set(alpha3)
         alpha_row_sum = alpha_row_sum.at[3].set(alpha4)
@@ -814,35 +841,37 @@ def step9():
         alpha = alpha.at[5, 4].set(alpha65)
         beta_row_sum_without_ii = beta_row_sum_without_ii.at[4].set(beta_tilt_5)
 
-
-   
         # condition 9
 
         def condition9_body(i, acc):
-            accum = acc 
+            accum = acc
             return accum + b[i] * (alpha_row_sum[i] ** 4)
 
         condition9 = jax.lax.fori_loop(0, 8, condition9_body, 0.0)
         eq9 = condition9
         r9 = eq9 - jnp.float64(1 / 5)
         print("condition9 done", time.time() - start_time)
-        # condition 11 
+
+        # condition 11
         def condition_11_body(i, acc):
             prev_step = acc
+
             def inner_j(j, acc):
                 i, prev_step = acc
+
                 def inner_k(k, acc):
                     i, prev_step = acc
                     next_step = prev_step + (alpha[i][k] * beta_row_sum[k])
                     return (i, next_step)
+
                 _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (i, 0.0))
                 next_step = prev_step + (alpha[i][j] * beta_row_sum[j] * k_accum)
                 return (i, next_step)
+
             _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
             next_step = prev_step + (b[i] * j_accum)
-            return next_step 
+            return next_step
 
-    
         condition11 = jax.lax.fori_loop(0, 8, condition_11_body, 0.0)
         eq11 = condition11
         r11 = eq11 - jnp.float64(1 / 20)
@@ -850,43 +879,52 @@ def step9():
 
         def condition_15_body(i, accum):
             prev_step = accum
+
             def inner_j(j, accum):
                 i, prev_step = accum
+
                 def inner_k(k, accum):
                     j, prev_step = accum
                     next_step = prev_step + beta[j][k] * beta_row_sum[k]
                     return (j, next_step)
+
                 _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (j, 0.0))
                 next_step = prev_step + (beta[i][j] * alpha_row_sum[j] * k_accum)
                 return (i, next_step)
+
             _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
             next_step = prev_step + (b[i] * j_accum)
             return next_step
 
-        condition15_accum= jax.lax.fori_loop(0, 8, condition_15_body, 0.0)
+        condition15_accum = jax.lax.fori_loop(0, 8, condition_15_body, 0.0)
         condition15 = condition15_accum
 
-
         r15 = condition15 - jnp.float64(1 / 40)
-        print("condition15 done", time.time() - start_time  )
+        print("condition15 done", time.time() - start_time)
         # condition 24
 
         def condition24_body(i, accum):
             prev_step = accum
+
             def inner_j(j, accum):
                 i, prev_step = accum
+
                 def inner_k(k, accum):
                     j, prev_step = accum
+
                     def inner_l(L, accum):
                         k, prev_step = accum
                         next_step = prev_step + (alpha[k][L] * beta_row_sum[L])
                         return (k, next_step)
+
                     _, l_accum = jax.lax.fori_loop(0, 8, inner_l, (k, 0.0))
                     next_step = prev_step + (w[j][k] * alpha_row_sum[k] * l_accum)
                     return (j, next_step)
+
                 _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (j, 0.0))
                 next_step = prev_step + (alpha[i][j] * k_accum)
                 return (i, next_step)
+
             _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
             next_step = prev_step + (b[i] * alpha_row_sum[i] * j_accum)
             return next_step
@@ -894,31 +932,44 @@ def step9():
         condition24 = jax.lax.fori_loop(0, 8, condition24_body, 0.0)
         r24 = condition24 - jnp.float64(1 / 10)
         print("condition24 done", time.time() - start_time)
-        
+
         def condition_25_body(i, accum):
             prev_step = accum
+
             def inner_j(j, accum):
                 i, prev_step = accum
+
                 def inner_k(k, accum):
                     j, prev_step = accum
+
                     def inner_l(L, accum):
                         k, prev_step = accum
+
                         def inner_m(m, accum):
                             L, prev_step = accum
-                            next_step = prev_step + (w[L][m] * jnp.power(alpha_row_sum[m],2))
+                            next_step = prev_step + (
+                                w[L][m] * jnp.power(alpha_row_sum[m], 2)
+                            )
                             return (L, next_step)
+
                         _, m_accum = jax.lax.fori_loop(0, 8, inner_m, (L, 0.0))
-                        next_step = prev_step + (alpha_row_sum[k]* alpha[k][L] * m_accum)
+                        next_step = prev_step + (
+                            alpha_row_sum[k] * alpha[k][L] * m_accum
+                        )
                         return (k, next_step)
+
                     _, l_accum = jax.lax.fori_loop(0, 8, inner_l, (k, 0.0))
                     next_step = prev_step + (w[j][k] * l_accum)
                     return (j, next_step)
+
                 _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (j, 0.0))
                 next_step = prev_step + (alpha[i][j] * k_accum)
                 return (i, next_step)
+
             _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
             next_step = prev_step + (b[i] * alpha_row_sum[i] * j_accum)
             return next_step
+
         condition25_accum = jax.lax.fori_loop(
             0,
             8,
@@ -931,25 +982,33 @@ def step9():
         # condition 26
 
         def condition_26_body(i, accum):
-            prev_step= accum
+            prev_step = accum
+
             def inner_j(j, accum):
                 i, prev_step = accum
+
                 def inner_k(k, accum):
                     i, prev_step = accum
+
                     def inner_l(L, accum):
-                        k, prev_step= accum
-                        next_step = prev_step + (w[k][L] * jnp.power(alpha_row_sum[L], 2))
+                        k, prev_step = accum
+                        next_step = prev_step + (
+                            w[k][L] * jnp.power(alpha_row_sum[L], 2)
+                        )
                         return (k, next_step)
+
                     _, l_accum = jax.lax.fori_loop(0, 8, inner_l, (k, 0.0))
                     next_step = prev_step + (alpha[i][k] * l_accum)
                     return (i, next_step)
+
                 _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (i, 0.0))
                 next_step = prev_step + (alpha[i][j] * beta_row_sum[j] * k_accum)
                 return (i, next_step)
-            _, j_accum= jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
+
+            _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
             next_step = prev_step + (b[i] * j_accum)
-            return  next_step
-                        
+            return next_step
+
         condition26_accum = jax.lax.fori_loop(
             0,
             8,
@@ -958,33 +1017,35 @@ def step9():
         )
         condition26 = condition26_accum
         r26 = condition26 - jnp.float64(1 / 10)
-        print("condition26 done", time.time() - start_time  )
+        print("condition26 done", time.time() - start_time)
+
         # condition 29
         def condition_29_body(i, accum):
             prev_step = accum
+
             def inner_j(j, accum):
                 i, prev_step = accum
+
                 def inner_k(k, accum):
                     j, prev_step = accum
                     next_step = prev_step + (w[j][k] * jnp.power(alpha_row_sum[k], 2))
                     return (j, next_step)
+
                 _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (j, 0.0))
                 next_step = prev_step + jnp.power(alpha[i][j] * k_accum, 2)
                 return (i, next_step)
+
             _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
             next_step = prev_step + (b[i] * j_accum)
             return next_step
-        condition29 = jax.lax.fori_loop(
-            0,
-            8,
-            condition_29_body,
-            0.0
-        )
+
+        condition29 = jax.lax.fori_loop(0, 8, condition_29_body, 0.0)
         r29 = condition29 - jnp.float64(1 / 5)
-        print("condition29 done", time.time() - start_time  )
-        # condition 44 
+        print("condition29 done", time.time() - start_time)
+
+        # condition 44
         def condition_44_body(i, accum):
-            prev_step= accum
+            prev_step = accum
 
             def inner_j(j, accum):
                 i, prev_step = accum
@@ -999,30 +1060,37 @@ def step9():
                             i, k, L, prev_step = accum
 
                             def inner_n(n, accum):
-                                m, prev_step= accum
+                                m, prev_step = accum
 
                                 def inner_r(r, accum):
                                     n, prev_step = accum
-                                    next_step = prev_step + (w[n][r] * jnp.power(alpha_row_sum[r], 2))
+                                    next_step = prev_step + (
+                                        w[n][r] * jnp.power(alpha_row_sum[r], 2)
+                                    )
                                     return (n, next_step)
-                                _, r_accum= jax.lax.fori_loop(0, 8, inner_r, (n, 0.0))
+
+                                _, r_accum = jax.lax.fori_loop(0, 8, inner_r, (n, 0.0))
                                 next_step = prev_step + (w[m][n] * r_accum)
                                 return (m, next_step)
 
-                            _, n_accum= jax.lax.fori_loop(0, 8, inner_n, (m, 0.0))
+                            _, n_accum = jax.lax.fori_loop(0, 8, inner_n, (m, 0.0))
                             next_step = prev_step + (alpha[i][m] * n_accum)
                             return (i, k, L, next_step)
 
-                        _, _, _, m_accum = jax.lax.fori_loop(0, 8, inner_m, (i, k, L, 0.0))
-                        next_step = prev_step + (w[k][L] * jnp.power(alpha_row_sum[L], 2) *m_accum)
+                        _, _, _, m_accum = jax.lax.fori_loop(
+                            0, 8, inner_m, (i, k, L, 0.0)
+                        )
+                        next_step = prev_step + (
+                            w[k][L] * jnp.power(alpha_row_sum[L], 2) * m_accum
+                        )
                         return (i, j, k, next_step)
 
-                    _, _, _, l_accum= jax.lax.fori_loop(0, 8, inner_l, (i, j, k, 0.0))
+                    _, _, _, l_accum = jax.lax.fori_loop(0, 8, inner_l, (i, j, k, 0.0))
                     next_step = prev_step + (w[j][k] * l_accum)
                     return (i, j, next_step)
 
-                _, _, k_accum= jax.lax.fori_loop(0, 8, inner_k, (i, j, 0.0))
-                next_step = prev_step + (alpha[i][j]* k_accum)
+                _, _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (i, j, 0.0))
+                next_step = prev_step + (alpha[i][j] * k_accum)
                 return (i, next_step)
 
             _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
@@ -1032,72 +1100,63 @@ def step9():
         condition44_accum = jax.lax.fori_loop(0, 8, condition_44_body, 0.0)
         r44 = condition44_accum - jnp.float64(4 / 3)
         print("condition44 done", time.time() - start_time)
+
         # condition 46
         def condition_46_body(i, accum):
             prev_step = accum
+
             def inner_j(j, accum):
                 i, prev_step = accum
+
                 def inner_k(k, accum):
                     j, prev_step = accum
                     next_step = prev_step + (w[j][k] * alpha_row_sum[k])
                     return (j, next_step)
+
                 _, k_accum = jax.lax.fori_loop(0, 8, inner_k, (j, 0.0))
                 next_step = prev_step + (alpha[i][j] * k_accum)
                 return (i, next_step)
+
             _, j_accum = jax.lax.fori_loop(0, 8, inner_j, (i, 0.0))
             next_step = prev_step + (b[i] * j_accum)
             return next_step
+
         condition46 = jax.lax.fori_loop(0, 8, condition_46_body, 0.0)
         r46 = condition46 - jnp.float64(1 / 2)
-        print("condition46 done", time.time() - start_time  )
+        print("condition46 done", time.time() - start_time)
 
         # condition 45 (JAX version, remove sympy, use subs for constants/parameters)
         def cond45_body(i, cond45_acc):
             accu = cond45_acc
             return accu + b[i] * (beta_row_sum_without_ii[i] - alpha_row_sum[i])
 
-        condition45= jax.lax.fori_loop(0, 8, cond45_body, 0.0)
-        r45 = condition45 - jnp.float64(1 / 2)
-        print("condition45 done", time.time() - start_time  )
-        return jnp.array([
-            r9,
-            r11,
-            r15,
-            r24,
-            r25,
-            r26,
-            r29,
-            r44,
-            r45,
-            r46
-        ])
-        
- 
-      
-    
-    parameters = (
-        jnp.float64(0.6358126895828704),
-        jnp.float64(0.4095798393397535),
-        jnp.float64(0.9769306725060716),
-        jnp.float64(2.561846144803919),
-        jnp.float64( -0.18268767659942256),
-        jnp.float64(76.97161085399631),
-        jnp.float64(0.21193756319429014),
-    )
-    # residue(parameters, 0)
-    
-    solver = optx.LevenbergMarquardt(
-    rtol=1e-8, atol=1e-8, verbose=frozenset({"step", "accepted", "loss", "step_size"})
-    )
+        condition45 = jax.lax.fori_loop(0, 8, cond45_body, 0.0)
+        r45 = condition45 - jnp.float64(0)
+        print("condition45 done", time.time() - start_time)
+        return jnp.array([r9, r11, r15, r24, r25, r26, r29, r44, r45, r46])
 
-    sol = optx.least_squares(residue, solver, parameters, args=None)
-    print(sol.value)
+    parameters = (
+        jnp.float64(0.5),
+        jnp.float64(0.7),
+        jnp.float64(0.9),
+        jnp.float64(0.3),
+        jnp.float64(0.2),
+        jnp.float64(0.75),
+        jnp.float64(0.25),
+    )
+    r = residue(parameters, 0)
+    print(r)
+
+    # solver = optx.LevenbergMarquardt(
+    # rtol=1e-8, atol=1e-8, verbose=frozenset({"step", "accepted", "loss", "step_size"})
+    # )
+
+    # sol = optx.least_squares(residue, solver, parameters, args=None)
+    # print(sol.value)
     print(alpha)
     print(beta)
     print(b)
     print(b_tilt)
-
-
 
 
 condition25 = 0
@@ -1107,13 +1166,19 @@ condition25 = 0
 
 
 app = modal.App("example-inference")
-image = modal.Image.from_registry("nvidia/cuda:13.1.0-devel-ubuntu22.04", add_python="3.12").uv_pip_install("jax[cuda13]>=0.8.1",
+image = modal.Image.from_registry(
+    "nvidia/cuda:13.1.0-devel-ubuntu22.04", add_python="3.12"
+).uv_pip_install(
+    "jax[cuda13]>=0.8.1",
     "lineax>=0.0.8",
     "modal>=1.2.6",
     "optimistix>=0.0.11",
     "sympy>=1.14.0",
-    "sympy2jax>=0.0.7",)
-@app.function(gpu="A100", image=image, cpu=8.0,memory=32768, timeout = 60 * 40)
+    "sympy2jax>=0.0.7",
+)
+
+
+@app.function(gpu="A100", image=image, cpu=8.0, memory=32768, timeout=60 * 40)
 def tune():
     from scipy.special import jn
     from pickle import NONE
@@ -1125,12 +1190,15 @@ def tune():
     import jax
     import sympy2jax
     import time
+
     jax.config.update("jax_enable_x64", True)
     step9()
-    
+
+
 @app.local_entrypoint()
 def main():
     # run the function locally
     tune.remote()
+
 
 tune.local()
