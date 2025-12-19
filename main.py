@@ -275,7 +275,7 @@ def step9():
                         beta_row_sum_without_ii[3],
                         beta_row_sum_without_ii[4],
                         beta_row_sum_without_ii[5],
-                        0,
+                        beta_row_sum_without_ii[6],
                     ],
                     [
                         jnp.power(alpha_row_sum[1], 2),
