@@ -504,7 +504,7 @@ def step9():
         subs_dict["α65"] = alpha[5][4] 
         for i in range(8):
             for j in range(8):
-                if (i, j) not in [(1, 0), (4, 1), (5, 4), (0, 0), (1,0)]:
+                if (i, j) not in [(1, 0), (4, 1), (5, 4)]:
                     subs_dict[f"α{i + 1}{j + 1}"] = jnp.float64(0)
 
         for i in range(8):
