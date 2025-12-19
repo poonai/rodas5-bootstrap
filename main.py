@@ -543,7 +543,6 @@ def step9():
 
         def expand_and_extract_coeff(equation):
             equation = sympy.expand(equation)
-            print(equation)
             coefficients = []
             for var in variables:
                 coeff = equation.coeff(sympy.Symbol(var))
