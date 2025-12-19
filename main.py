@@ -384,6 +384,7 @@ def step9():
 
         for i in range(1, 8):
             print(f"i {i} {beta[i]}")
+            print(f"trimmed {beta[i][1:i]}")
             first_column = beta_row_sum_without_ii[i] - jnp.sum(beta[i][1:i])
             beta = beta.at[i, 0].set(first_column)
 
