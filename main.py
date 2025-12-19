@@ -407,7 +407,8 @@ def step9():
 
         for i in range(6):
             alpha = alpha.at[6, i].set(beta[5][i])
-
+        
+        print(beta)
         w = jnp.linalg.inv(beta)
 
     def substitute_symbols(equation):
