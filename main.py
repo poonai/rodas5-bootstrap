@@ -283,7 +283,7 @@ def step9():
                         jnp.power(alpha_row_sum[3], 2),
                         jnp.power(alpha_row_sum[4], 2),
                         jnp.float64(1),
-                        0,
+                        jnp.float64(1),
                     ],
                     [
                         0,
